@@ -43,19 +43,10 @@ Func _ConsoleWrite($sData = '', $iType = 0)
 			$sPrefix = '>'
 	EndSwitch
 
-	If StringLen($sPrefix) > 0 Then
-		$sPrefix &= ' '
+	If StringLen($sPrefix) > 0 Then $sPrefix &= ' '
+	$sData = _AddPrefix($sData, $sPrefix)
 
-		; Fix bug:
-		; -----------------------------------------------
-		; _ConsoleWrite('Info type', $CONSOLE_INFO)
-		; _ConsoleWrite('Warning type', $CONSOLE_WARNING)
-		; -----------------------------------------------
-		; > Info type- Warning type
-		$sData &= @CRLF
-	EndIf
-
-	Return ConsoleWrite($sPrefix & $sData)
+	Return ConsoleWrite($sData)
 EndFunc   ;==>_ConsoleWrite
 
 Func _ConsoleWriteLn($sData, $iType = 0)
@@ -65,4 +56,37 @@ EndFunc   ;==>_ConsoleWriteLn
 Func ConsoleWriteEx($sData, $iType = 0) ; Alias
 	Return _ConsoleWrite($sData, $iType)
 EndFunc   ;==>ConsoleWriteEx
+
+Func _AddPrefix($sData, $sPrefix = '')
+	$sData = StringReplace($sData, @CRLF, @CR)
+	$sData = StringReplace($sData, @LF, @CR)
+
+	Local $lines = StringSplit($sData, @CR, 1)
+	Local $t = $lines[0] - 1
+
+	If $t > 0 Then ; If is multi-line
+		If StringLen($sPrefix) == 0 Then Return $sData
+
+		Local $sResult = ''
+
+		; Add prefix to all line
+		For $i = 1 To $t
+			$sResult &= $sPrefix & $lines[$i] & @CRLF
+		Next
+
+		Return $sResult
+	Else
+		If StringLen($sPrefix) > 0 Then
+			; Fix bug:
+			; -----------------------------------------------
+			; _ConsoleWrite('Info type', $CONSOLE_INFO)
+			; _ConsoleWrite('Warning type', $CONSOLE_WARNING)
+			; -----------------------------------------------
+			; > Info type- Warning type
+			$sData &= @CRLF
+		EndIf
+
+		Return $sPrefix & $sData
+	EndIf
+EndFunc   ;==>_AddPrefix
 #EndRegion FUNCTIONS
