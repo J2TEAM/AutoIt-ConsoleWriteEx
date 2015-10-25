@@ -26,7 +26,6 @@ EndFunc   ;==>Example
 
 Func Example2() ; Multi-line demo
 	Local $msg = ''
-
 	For $i = 1 to 5
 		$msg &= 'This is line: ' & $i & @CRLF
 	Next

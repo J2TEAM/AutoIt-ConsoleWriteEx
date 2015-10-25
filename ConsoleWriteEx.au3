@@ -22,8 +22,15 @@ Global Const $CONSOLE_INFO = 64
 ; ConsoleWriteEx..: Alias of _ConsoleWrite
 ; ===============================================================================================================================
 
-#Region FUNCTIONS
-Func _ConsoleWrite($sData = '', $iType = 0)
+; #INTERNAL_USE_ONLY# ===========================================================================================================
+; __AddPrefix
+; __GetTime
+; __GetLogType
+; __StringRepeat
+; ===============================================================================================================================
+
+#Region PUBLIC FUNCTIONS
+Func _ConsoleWrite($sData = '', $iType = 0, $showTime = True)
 	Local $sPrefix = ''
 
 	; Make sure flag is a number
@@ -44,7 +51,7 @@ Func _ConsoleWrite($sData = '', $iType = 0)
 	EndSwitch
 
 	If StringLen($sPrefix) > 0 Then $sPrefix &= ' '
-	$sData = _AddPrefix($sData, $sPrefix)
+	$sData = __AddPrefix($sData, $sPrefix, $showTime)
 
 	Return ConsoleWrite($sData)
 EndFunc   ;==>_ConsoleWrite
@@ -56,8 +63,10 @@ EndFunc   ;==>_ConsoleWriteLn
 Func ConsoleWriteEx($sData, $iType = 0) ; Alias
 	Return _ConsoleWrite($sData, $iType)
 EndFunc   ;==>ConsoleWriteEx
+#EndRegion PUBLIC FUNCTIONS
 
-Func _AddPrefix($sData, $sPrefix = '')
+#Region PRIVATE FUNCTIONS
+Func __AddPrefix($sData, $sPrefix = '', $showTime = False)
 	$sData = StringReplace($sData, @CRLF, @CR)
 	$sData = StringReplace($sData, @LF, @CR)
 
@@ -74,6 +83,14 @@ Func _AddPrefix($sData, $sPrefix = '')
 			$sResult &= $sPrefix & $lines[$i] & @CRLF
 		Next
 
+		If $showTime Then
+			Local $time = __GetTime()
+			Local $line1 = __StringRepeat('-', 40)
+			Local $line2 = $sPrefix & $line1 & $line1 & __StringRepeat('-', StringLen($time))
+			$line1 = $sPrefix & $line1 & $time & $line1 & @CRLF
+			$sResult = $line1 & $sResult & $line2 & @CRLF
+		EndIf
+
 		Return $sResult
 	Else
 		If StringLen($sPrefix) > 0 Then
@@ -86,7 +103,49 @@ Func _AddPrefix($sData, $sPrefix = '')
 			$sData &= @CRLF
 		EndIf
 
-		Return $sPrefix & $sData
+		Local $sResult = $sPrefix
+
+		If $showTime Then $sResult &= __GetTime() & ' '
+
+		$sResult &= $sData
+		Return $sResult
 	EndIf
-EndFunc   ;==>_AddPrefix
-#EndRegion FUNCTIONS
+EndFunc   ;==>__AddPrefix
+
+Func __GetTime()
+	Return StringFormat('[%02i:%02i:%02i]', @HOUR, @MIN, @SEC)
+EndFunc   ;==>__GetTime
+
+Func __GetLogType($sPrefix)
+	$sPrefix = StringReplace($sPrefix, ' ', '')
+
+	Local $sType
+
+	Switch $sPrefix
+		Case '!'
+			$sType = 'error'
+
+		Case '>'
+			$sType = 'info'
+
+		Case '+'
+			$sType = 'success'
+
+		Case '-'
+			$sType = 'warning'
+
+		Case Else
+			$sType = 'none'
+	EndSwitch
+
+	Return StringUpper($sType)
+EndFunc   ;==>__GetLogType
+
+Func __StringRepeat($str, $length)
+	Local $result = ''
+	For $i = 1 To $length
+		$result &= $str
+	Next
+	Return $result
+EndFunc   ;==>__StringRepeat
+#EndRegion PRIVATE FUNCTIONS
