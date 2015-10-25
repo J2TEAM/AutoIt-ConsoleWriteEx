@@ -4,7 +4,7 @@ Advanced console functions based on [ConsoleWrite](https://www.autoitscript.com/
 
 ## Screenshot
 
-TODO
+![AutoIt ConsoleWriteEx UDF](Screenshot.png)
 
 ## Usage
 
